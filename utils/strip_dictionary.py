@@ -1,3 +1,6 @@
+# NOTE: This script will save a new wordlist.json into assets/ in the root folder.
+# You must manually move this newly generated wordlist into backend's resources folder.
+
 import json
 
 data = {}
