@@ -41,6 +41,12 @@ Done! You've successfully solved the **Spelling Bee**!
 
 ## Current Release: Solver V1 (pushed on March 12th, 2026)
 
+### Fixes from Previous Version
+
+- Updated wordlist to contain all verb tenses. Solver will not miss words now but it heavily overestimates.
+
+## Archived Releases: Solver V1 (pushed on March 12th, 2026)
+
 ### Summary
 
 The Solver V1 solution implements a pretty naive solution to the Spelling Bee challenge, but it works! In fact, despite being naive, it works much faster than I initially thought it would. As such, I'm not sure if there is really any need to tweak the algorithm for speed since it did not even take a second to complete. I have been brainstorming some optimizations to reduce the average number of operations, but I have not convinced myself yet that they would even be better. I might consider taking a look at other kinds of optimizations though, like minimizing the amount of things or the size of the things Quarkus has to inject/resolve at startup.
