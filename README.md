@@ -2,7 +2,7 @@
 
 ## Why I made this
 
-Every morning I play the hit game **Spelling Bee** from the New York Times. What a great way to start my day! It's a unique sort of challenge and I love it when I manage to pull out a word that I didn't even know that I knew—isn't it amazing what the human mind can accomplish? And once I can't possibly think of any more words, I put the phone down and give myself a pat on the back for a job well done. Then, in the spirit of friendly competition, I click out of the game and compare my score with that of my sister. Day ruined.
+Every morning I play the hit game **Spelling Bee** from the New York Times. What a great way to start my day! It's a unique sort of challenge and I love it when I manage to pull out a word that I didn't even know that I knew—isn't it amazing what the human mind can accomplish? And once I can't possibly think of any more words, I put the phone down and give myself a pat on the back for a job well done. Then, in the spirit of friendly competition, I click out of the game and compare my score with my sister's. Day ruined.
 
 So I made this! A little passion project that could guarantee I never lose the **Spelling Bee** again.
 
