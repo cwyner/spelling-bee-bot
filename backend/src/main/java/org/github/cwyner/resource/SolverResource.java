@@ -12,8 +12,11 @@ import jakarta.ws.rs.core.MediaType;
 
 @Path("/solver")
 public class SolverResource {
+    private final SolverService solverService;
 
-    public SolverService solverService;
+    public SolverResource(SolverService solverService) {
+        this.solverService = solverService;
+    }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
