@@ -39,7 +39,7 @@ curl -X POST http://localhost:8080/solver \
 
 Done! You've successfully solved the **Spelling Bee**!
 
-## Current Release: Solver V1 (pushed on March 12th, 2026)
+## Current Release: Solver V1.1 (pushed on March 12th, 2026)
 
 ### Fixes from Previous Version
 
