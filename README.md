@@ -8,44 +8,42 @@ So I made this! A little passion project that could guarantee I never lose the *
 
 ## How it works
 
-The Spelling Bee Bot is a Quarkus application that can solve any Spelling Bee puzzle. It exposes a single endpoint at https://whatever-the-URL-is/solver, which takes in a POST request. The expected JSON body of said request is of the following form:
+The Spelling Bee Bot is comprised of 2 microservices: a Quarkus backend and an Angular web UI. The backend exposes a single endpoint at https://whatever-the-URL-is/solver, which takes in a POST request whenever a user clicks "Solve Puzzle" in the web UI. The expected JSON body of said request is of the following form:
 
-```
-{
-    "letters": ["t", "l", "w", "e", "o", "d", "n"],
-    "requiredLetter": "n"
-}
-```
-
-In this example request, notice the required letter (the center letter of the Spelling Bee puzzle) is also included in the array of letters in this request. This is actually not required. Omitting the required letter from the array will still give the same results, as long as it is properly denoted in the JSON's `requiredLetter` field. The eventual goal for this project is for it to become a fully-fledged web-app, where the Quarkus `backend` service receives these requests automatically from a webpage, so you, the person reading this, does not have to worry about building such JSON requests.
-
-But you can if you want to! Just clone this GitHub repo (or download it as a .zip file or whatever you wanna do to get the code on your computer), then from the root folder in a terminal, run:
+If you want to run this application locally, first clone the repo. Then, open two separate terminals. From the root folder of this project, run the following commands in the first terminal:
 
 ```
 cd backend
 mvn quarkus:dev
 ```
 
-Now you're running the backend in dev mode! This is entirely sufficient to use the solver, no web UI required. Just open another terminal and make a cURL request to the /solver endpoint. If you didn't touch `application.properties`, then your cURL request should look like this:
+And then run these commands in the second terminal:
 
 ```
-curl -X POST http://localhost:8080/solver \
-  -H "Content-Type: application/json" \
-  -d '{
-    "letters": ["t", "l", "w", "e", "o", "d", "n"],
-    "requiredLetter": "n"
-  }'
+cd web-ui
+npm install
+npm start
 ```
 
-Done! You've successfully solved the **Spelling Bee**!
+Once the web UI is up and running, navigate to http://localhost:4200/ in your browser. Click the "Customize" button beneath the empty honeycomb, then click on a hex to input a character. Once all the hexes are filled, click "Done", and then "Solve Puzzle". Great! You've successfully solved the **Spelling Bee**!
 
-## Current Release: Solver V1.1 (pushed on March 12th, 2026)
+## Current Release:
+
+### Solver V2.0 (pushed on April 26th, 2026)
+
+### Features
+
+- Added Web UI :)
+
+## Archived Releases: 
+
+### Solver V1.1 (pushed on March 12th, 2026)
 
 ### Fixes from Previous Version
 
 - Updated wordlist to contain all verb tenses. Solver will not miss words now but it heavily overestimates.
 
-## Archived Releases: Solver V1 (pushed on March 12th, 2026)
+### Solver V1 (pushed on March 12th, 2026)
 
 ### Summary
 
