@@ -1,0 +1,7 @@
+@if (puzzleService.solutions(); as result) {
+  <ul>
+    @for (word of result.solutions; track word) {
+      <li>{{ word }}</li>
+    }
+  </ul>
+}
