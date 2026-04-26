@@ -1,7 +1,7 @@
 package org.github.cwyner.resource;
 
 import org.github.cwyner.dto.PuzzleDto;
-import org.github.cwyner.dto.SolutionDto;
+import org.github.cwyner.dto.SolutionsDto;
 import org.github.cwyner.service.SolverService;
 
 import jakarta.ws.rs.Consumes;
@@ -21,7 +21,7 @@ public class SolverResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public SolutionDto solve(PuzzleDto puzzle) {
+    public SolutionsDto solve(PuzzleDto puzzle) {
         return solverService.solve(puzzle);
     }
 }

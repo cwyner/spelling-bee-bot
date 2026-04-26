@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.github.cwyner.dto.PuzzleDto;
-import org.github.cwyner.dto.SolutionDto;
+import org.github.cwyner.dto.SolutionsDto;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -19,22 +19,24 @@ public class SolverService {
         this.wordlistService = wordlistService;
     }
 
-    public SolutionDto solve(PuzzleDto puzzle) {
+    public SolutionsDto solve(PuzzleDto puzzle) {
         Set<String> words = wordlistService.getWords();
 
-        char requiredLetter = puzzle.getRequiredLetter().charAt(0);
+        char requiredLetter = puzzle.getRequiredLetter().toLowerCase(java.util.Locale.ROOT).charAt(0);
 
         // Initialize new HashMap for letter lookup
         HashMap<Character, Integer> letterMap = new HashMap<>();
-        for (int i = 0; i < puzzle.getLetters().length; i++) {
-            letterMap.put(puzzle.getLetters()[i].charAt(0), 1);
+        for (int i = 0; i < puzzle.getOuterLetters().length; i++) {
+            letterMap.put(puzzle.getOuterLetters()[i].toLowerCase(java.util.Locale.ROOT).charAt(0), 1);
         }
 
         List<String> validWords = new ArrayList<>();
 
         /*
          * Main logic loop:
+         * 
          * Iterate through every single word in the wordlist (outer loop).
+         * If word is 3 characters or less, continue.
          * Reset boolean flag to false at the beginning of outer loop.
          * Start to iterate through every character in the current word (inner loop).
          * If we see the required letter, set the boolean flag to true and continue.
@@ -43,6 +45,9 @@ public class SolverService {
          * to the solutions list.
          */
         for (String word : words) {
+            if (word.length() <= 3) {
+                continue;
+            }
             isRequiredLetterUsed = false;
             for (int i = 0; i < word.length(); i++) {
                 char currChar = word.charAt(i);
@@ -61,7 +66,7 @@ public class SolverService {
             }
         }
         // Create the SolutionDto with the updated list of valid words.
-        SolutionDto solutions = new SolutionDto();
+        SolutionsDto solutions = new SolutionsDto();
         solutions.setSolutions(validWords);
         return solutions;
     }

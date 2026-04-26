@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Solve } from './solve/solve';
+import { PuzzleService } from '../services/puzzle.service';
 
 @Component({
   selector: 'app-action-buttons',
@@ -7,4 +8,6 @@ import { Solve } from './solve/solve';
   templateUrl: './action-buttons.html',
   styleUrl: './action-buttons.css',
 })
-export class ActionButtons {}
+export class ActionButtons {
+  protected readonly puzzleService = inject(PuzzleService);
+}
