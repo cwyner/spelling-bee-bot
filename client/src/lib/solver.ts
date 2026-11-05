@@ -1,3 +1,5 @@
+import { API_URL } from '../config'
+
 export interface PuzzleDto {
   requiredLetter: string
   outerLetters: string[]
@@ -8,7 +10,7 @@ export interface SolutionsDto {
 }
 
 export async function solvePuzzle(puzzle: PuzzleDto): Promise<SolutionsDto> {
-  const response = await fetch('/solver', {
+  const response = await fetch(`${API_URL}/solver`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(puzzle),
