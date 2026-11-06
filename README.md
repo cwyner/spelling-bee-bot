@@ -8,7 +8,7 @@ So I made this! A little passion project that could guarantee I never lose the *
 
 ## How it works
 
-The Spelling Bee Bot is comprised of 2 microservices: a Quarkus backend and an Angular web UI. The backend exposes a single endpoint at https://whatever-the-URL-is/solver, which takes in a POST request whenever a user clicks "Solve Puzzle" in the web UI. The expected JSON body of said request is of the following form:
+The Spelling Bee Bot is comprised of 2 microservices: a Quarkus backend and a React + Vite web UI (in `client/`). The backend exposes a single endpoint at https://whatever-the-URL-is/solver, which takes in a POST request whenever a user clicks "Solve" in the web UI. The expected JSON body of said request is of the following form:
 
 If you want to run this application locally, first clone the repo. Then, open two separate terminals. From the root folder of this project, run the following commands in the first terminal:
 
@@ -20,12 +20,12 @@ mvn quarkus:dev
 And then run these commands in the second terminal:
 
 ```
-cd web-ui
+cd client
 npm install
-npm start
+npm run dev
 ```
 
-Once the web UI is up and running, navigate to http://localhost:4200/ in your browser. Click the "Customize" button beneath the empty honeycomb, then click on a hex to input a character. Once all the hexes are filled, click "Done", and then "Solve Puzzle". Great! You've successfully solved the **Spelling Bee**!
+Once the web UI is up and running, navigate to http://localhost:5173/ in your browser. Click a cell in the honeycomb and type a letter (the yellow center letter is required). Once all 7 cells are filled, click "Solve". Great! You've successfully solved the **Spelling Bee**!
 
 ## Current Release:
 

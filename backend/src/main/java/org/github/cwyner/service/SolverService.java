@@ -3,17 +3,18 @@ package org.github.cwyner.service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.github.cwyner.dto.PuzzleDto;
 import org.github.cwyner.dto.SolutionsDto;
+import org.github.cwyner.dto.WordDto;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class SolverService {
     private final WordlistService wordlistService;
-    private boolean isRequiredLetterUsed;
 
     public SolverService(WordlistService wordlistService) {
         this.wordlistService = wordlistService;
@@ -22,52 +23,45 @@ public class SolverService {
     public SolutionsDto solve(PuzzleDto puzzle) {
         Set<String> words = wordlistService.getWords();
 
-        char requiredLetter = puzzle.getRequiredLetter().toLowerCase(java.util.Locale.ROOT).charAt(0);
+        char requiredLetter = puzzle.requiredLetter().charAt(0);
 
-        // Initialize new HashMap for letter lookup
-        HashMap<Character, Integer> letterMap = new HashMap<>();
-        for (int i = 0; i < puzzle.getOuterLetters().length; i++) {
-            letterMap.put(puzzle.getOuterLetters()[i].toLowerCase(java.util.Locale.ROOT).charAt(0), 1);
+        Map<Character, Integer> letterMap = new HashMap<>();
+        for (int i = 0; i < puzzle.outerLetters().size(); i++) {
+            letterMap.put(puzzle.outerLetters().get(i).charAt(0), 1);
         }
 
-        List<String> validWords = new ArrayList<>();
-
-        /*
-         * Main logic loop:
-         * 
-         * Iterate through every single word in the wordlist (outer loop).
-         * If word is 3 characters or less, continue.
-         * Reset boolean flag to false at the beginning of outer loop.
-         * Start to iterate through every character in the current word (inner loop).
-         * If we see the required letter, set the boolean flag to true and continue.
-         * If a character is not in the letterMap, set boolean flag to false and break.
-         * If we finish the inner loop without setting the flag to false, add the word
-         * to the solutions list.
-         */
+        List<WordDto> validWords = new ArrayList<>();
+        boolean isRequiredLetterUsed;
         for (String word : words) {
             if (word.length() <= 3) {
                 continue;
             }
+            Map<Character, Integer> seen = new HashMap<>();
             isRequiredLetterUsed = false;
             for (int i = 0; i < word.length(); i++) {
                 char currChar = word.charAt(i);
                 if (currChar == requiredLetter) {
+                    seen.put(currChar, 1);
                     isRequiredLetterUsed = true;
                     continue;
                 }
                 if (!letterMap.containsKey(currChar)) {
-                    // We set the boolean flag to false so the word can't pass the conditional below
                     isRequiredLetterUsed = false;
                     break;
                 }
+                seen.put(currChar, 1);
             }
             if (isRequiredLetterUsed == true) {
-                validWords.add(word);
+                if (seen.size() == 7) {
+                    WordDto validWord = new WordDto(word, true);
+                    validWords.add(validWord);
+                } else {
+                    WordDto validWord = new WordDto(word, false);
+                    validWords.add(validWord);
+                }
             }
         }
-        // Create the SolutionDto with the updated list of valid words.
-        SolutionsDto solutions = new SolutionsDto();
-        solutions.setSolutions(validWords);
+        SolutionsDto solutions = new SolutionsDto(validWords);
         return solutions;
     }
 }

@@ -2,9 +2,5 @@ package org.github.cwyner.dto;
 
 import java.util.List;
 
-import lombok.Data;
-
-@Data
-public class SolutionsDto {
-    public List<String> solutions;
+public record SolutionsDto(List<WordDto> solutions) {
 }
