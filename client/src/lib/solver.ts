@@ -5,8 +5,14 @@ export interface PuzzleDto {
   outerLetters: string[]
 }
 
+/** Mirrors backend org.github.cwyner.dto.WordDto */
+export interface WordDto {
+  word: string
+  pangram: boolean
+}
+
 export interface SolutionsDto {
-  solutions: string[]
+  solutions: WordDto[]
 }
 
 export async function solvePuzzle(puzzle: PuzzleDto): Promise<SolutionsDto> {

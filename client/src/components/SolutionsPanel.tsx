@@ -1,11 +1,12 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { titleCase } from '../lib/puzzle'
+import type { WordDto } from '../lib/solver'
 
 export type SolveStatus = 'idle' | 'solving' | 'solved' | 'error'
 
 interface SolutionsPanelProps {
   status: SolveStatus
-  words: string[]
+  words: WordDto[]
   onRetry: () => void
 }
 
@@ -14,9 +15,10 @@ export function SolutionsPanel({ status, words, onRetry }: SolutionsPanelProps) 
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return q ? words.filter((w) => w.toLowerCase().includes(q)) : words
+    return q ? words.filter((w) => w.word.toLowerCase().includes(q)) : words
   }, [words, query])
 
+  const pangramCount = useMemo(() => words.filter((w) => w.pangram).length, [words])
   const hasWords = status === 'solved' && words.length > 0
 
   return (
@@ -26,9 +28,15 @@ export function SolutionsPanel({ status, words, onRetry }: SolutionsPanelProps) 
           Solutions
         </h2>
         {hasWords && (
-          <div className="stat">
-            <span className="stat-value">{words.length}</span>
-            <span className="stat-label">{words.length === 1 ? 'word' : 'words'}</span>
+          <div className="stats">
+            <div className="stat">
+              <span className="stat-value">{words.length}</span>
+              <span className="stat-label">{words.length === 1 ? 'word' : 'words'}</span>
+            </div>
+            <div className="stat stat-highlight">
+              <span className="stat-value">{pangramCount}</span>
+              <span className="stat-label">{pangramCount === 1 ? 'pangram' : 'pangrams'}</span>
+            </div>
           </div>
         )}
       </div>
@@ -83,9 +91,18 @@ export function SolutionsPanel({ status, words, onRetry }: SolutionsPanelProps) 
         )}
         {hasWords && visible.length > 0 && (
           <ul className="word-list">
-            {visible.map((word, i) => (
-              <li key={word} className="word" style={{ '--i': Math.min(i, 60) } as CSSProperties}>
-                {titleCase(word)}
+            {visible.map((w, i) => (
+              <li
+                key={w.word}
+                className={`word${w.pangram ? ' is-pangram' : ''}`}
+                style={{ '--i': Math.min(i, 60) } as CSSProperties}
+              >
+                {titleCase(w.word)}
+                {w.pangram && (
+                  <span className="pangram-star" aria-label="pangram">
+                    ★
+                  </span>
+                )}
               </li>
             ))}
           </ul>

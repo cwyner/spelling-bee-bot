@@ -428,6 +428,11 @@ p {
   font-variation-settings: 'opsz' 72;
 }
 
+.stats {
+  display: flex;
+  gap: 8px;
+}
+
 .stat {
   display: flex;
   align-items: baseline;
@@ -447,6 +452,14 @@ p {
 .stat-label {
   color: var(--ink-soft);
   font-weight: 500;
+}
+
+.stat-highlight {
+  background: var(--bee-yellow);
+}
+
+.stat-highlight .stat-label {
+  color: var(--ink);
 }
 
 /* Toolbar */
@@ -553,6 +566,18 @@ p {
     opacity: 0;
     transform: translateY(3px);
   }
+}
+
+.word.is-pangram {
+  border-radius: 6px;
+  border-bottom-color: transparent;
+  background: var(--bee-yellow);
+  font-weight: 800;
+}
+
+.pangram-star {
+  margin-left: 6px;
+  font-size: 12px;
 }
 
 /* Empty / message / skeleton */

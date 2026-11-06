@@ -4,7 +4,7 @@ import { Honeycomb } from './components/Honeycomb'
 import { PuzzleControls } from './components/PuzzleControls'
 import { SolutionsPanel, type SolveStatus } from './components/SolutionsPanel'
 import { EMPTY_LETTERS, HEX_COUNT, SAMPLE_LETTERS, isComplete, shuffleOuter, type Letters } from './lib/puzzle'
-import { solvePuzzle } from './lib/solver'
+import { solvePuzzle, type WordDto } from './lib/solver'
 
 interface Toast {
   id: number
@@ -23,7 +23,7 @@ export default function App() {
   const [selected, setSelected] = useState(0)
   const [shuffleKey, setShuffleKey] = useState(0)
   const [status, setStatus] = useState<SolveStatus>('idle')
-  const [words, setWords] = useState<string[]>([])
+  const [words, setWords] = useState<WordDto[]>([])
   const [toast, setToast] = useState<Toast | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
