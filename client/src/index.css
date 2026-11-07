@@ -476,6 +476,38 @@ p {
   background: var(--surface);
 }
 
+.sort-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+}
+
+.sort-toggle button {
+  height: 30px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.sort-toggle button.is-active {
+  background: var(--ink);
+  color: #fff;
+}
+
+.sort-toggle button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
 .search {
   display: flex;
   align-items: center;
@@ -560,6 +592,26 @@ p {
   animation: word-in 260ms ease both;
   animation-delay: calc(var(--i, 0) * 8ms);
 }
+
+.word-points {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #f2f2f2;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.word.is-pangram .word-points {
+  background: var(--ink);
+  color: var(--bee-yellow);
+}
+
 
 @keyframes word-in {
   from {

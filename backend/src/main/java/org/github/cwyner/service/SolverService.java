@@ -51,17 +51,29 @@ public class SolverService {
                 }
                 seen.put(currChar, 1);
             }
-            if (isRequiredLetterUsed == true) {
-                if (seen.size() == 7) {
-                    WordDto validWord = new WordDto(word, true);
-                    validWords.add(validWord);
-                } else {
-                    WordDto validWord = new WordDto(word, false);
-                    validWords.add(validWord);
-                }
+            if (isRequiredLetterUsed) {
+                boolean pangram = seen.size() == 7;
+                validWords.add(new WordDto(word, pangram, calculatePoints(word, pangram)));
             }
         }
         SolutionsDto solutions = new SolutionsDto(validWords);
         return solutions;
+    }
+
+    private int calculatePoints(String word, boolean isPangram) {
+        int length = word.length();
+
+        int points;
+        if (length == 4) {
+            return 1;
+        } else {
+            points = length;
+        }
+
+        if (isPangram) {
+            points += 7;
+        }
+
+        return points;
     }
 }

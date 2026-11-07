@@ -4,6 +4,8 @@ import type { WordDto } from '../lib/solver'
 
 export type SolveStatus = 'idle' | 'solving' | 'solved' | 'error'
 
+type SortMode = 'alpha' | 'points'
+
 interface SolutionsPanelProps {
   status: SolveStatus
   words: WordDto[]
@@ -12,11 +14,19 @@ interface SolutionsPanelProps {
 
 export function SolutionsPanel({ status, words, onRetry }: SolutionsPanelProps) {
   const [query, setQuery] = useState('')
+  const [sort, setSort] = useState<SortMode>('alpha')
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return q ? words.filter((w) => w.word.toLowerCase().includes(q)) : words
-  }, [words, query])
+    const filtered = q ? words.filter((w) => w.word.toLowerCase().includes(q)) : words
+    const sorted = [...filtered]
+    if (sort === 'points') {
+      sorted.sort((a, b) => b.points - a.points || a.word.localeCompare(b.word))
+    } else {
+      sorted.sort((a, b) => a.word.localeCompare(b.word))
+    }
+    return sorted
+  }, [words, query, sort])
 
   const pangramCount = useMemo(() => words.filter((w) => w.pangram).length, [words])
   const hasWords = status === 'solved' && words.length > 0
@@ -43,6 +53,26 @@ export function SolutionsPanel({ status, words, onRetry }: SolutionsPanelProps) 
 
       {hasWords && (
         <div className="toolbar">
+          <div className="sort-toggle" role="radiogroup" aria-label="Sort solutions">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={sort === 'alpha'}
+              className={sort === 'alpha' ? 'is-active' : ''}
+              onClick={() => setSort('alpha')}
+            >
+              A-Z
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={sort === 'points'}
+              className={sort === 'points' ? 'is-active' : ''}
+              onClick={() => setSort('points')}
+            >
+              Points
+            </button>
+          </div>
           <label className="search">
             <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -103,6 +133,7 @@ export function SolutionsPanel({ status, words, onRetry }: SolutionsPanelProps) 
                     ★
                   </span>
                 )}
+                <span className="word-points">{w.points}</span>
               </li>
             ))}
           </ul>

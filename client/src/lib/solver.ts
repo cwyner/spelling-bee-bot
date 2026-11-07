@@ -5,10 +5,10 @@ export interface PuzzleDto {
   outerLetters: string[]
 }
 
-/** Mirrors backend org.github.cwyner.dto.WordDto */
 export interface WordDto {
   word: string
   pangram: boolean
+  points: number
 }
 
 export interface SolutionsDto {
