@@ -2,11 +2,12 @@
 
 Pipeline (see README.md for the reasoning behind each step):
   1. Structural filters: 4+ letters, a-z only, at most 7 distinct letters, no "s".
-  2. Words in data/manual_keep.txt are always kept from here on.
+  2. Words in data/manual_keep.txt are always kept, and added even if the source lacks them.
   3. Frequency: drop words never seen in real English text (wordfreq Zipf score of 0).
   4. Dictionary classification (Webster's 1934, data/web2), checked in this order:
        - lowercase dictionary word                            -> keep
-       - only ever capitalized there, or in data/propernames  -> drop (proper noun)
+       - only ever capitalized there, or in data/propernames  -> drop as a proper noun,
+                                                                 unless listed in data/name_rescues.txt
        - inflection of a lowercase dictionary word            -> keep
        - not in the dictionary at all                         -> "unknown"
   5. Unknown words: keep unless listed in data/llm_drops.tsv (LLM review decisions).
@@ -67,6 +68,7 @@ def main() -> None:
     proper_names = {w.lower() for w in (DATA / "propernames").read_text().split()} - lowercase_dict
 
     manual_keep = set((DATA / "manual_keep.txt").read_text().split())
+    name_rescues = set((DATA / "name_rescues.txt").read_text().split())
 
     llm_drops = {}
     for line in (DATA / "llm_drops.tsv").read_text().splitlines():
@@ -86,7 +88,10 @@ def main() -> None:
         elif word in lowercase_dict:
             kept.append(word)
         elif word in capital_only or word in proper_names:
-            reasons["proper noun (dictionary)"] += 1
+            if word in name_rescues:
+                kept.append(word)
+            else:
+                reasons["proper noun (dictionary)"] += 1
         elif any(b in lowercase_dict for b in base_forms(word)):
             kept.append(word)
         elif word in llm_drops:
@@ -94,11 +99,17 @@ def main() -> None:
         else:
             kept.append(word)
 
+    # Manual keeps are added even when the source list lacks them (e.g. modern words like "clickbait").
+    source_set = set(words)
+    added = sorted(w for w in manual_keep if w not in source_set and passes_structure(w))
+    kept = sorted(set(kept) | set(added))
+
     OUTPUT.write_text(json.dumps(kept, indent=4) + "\n")
 
     print(f"source words: {len(words):,}")
     for reason, count in sorted(reasons.items(), key=lambda kv: -kv[1]):
         print(f"  dropped, {reason}: {count:,}")
+    print(f"  added from manual_keep.txt (not in source): {len(added):,}")
     print(f"kept: {len(kept):,} -> {OUTPUT.relative_to(HERE.parents[1])}")
 
 

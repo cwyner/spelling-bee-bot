@@ -22,9 +22,9 @@ The build is deterministic: the same inputs always produce the same `wordlist.js
 | Step | Rule | Why |
 |---|---|---|
 | 1. Structure | 4+ letters, a-z only, at most 7 distinct letters, no `s` | Can never be a Spelling Bee answer. NYT puzzles never use the letter S. |
-| 2. Manual keep | Words in `data/manual_keep.txt` are always kept | Escape hatch for real words the later rules get wrong. |
+| 2. Manual keep | Words in `data/manual_keep.txt` are always kept, and added even if the source list lacks them | Escape hatch for real words the rules get wrong or the source is missing (*clickbait*, *acai*). |
 | 3. Frequency | Drop words with a `wordfreq` Zipf score of 0 | Never seen in real English text: almost entirely obscure junk. |
-| 4. Dictionary | Check `data/web2` (Webster's 2nd, 1934): lowercase entry → keep; capitalized-only entry or in `data/propernames` → drop as a name; inflection of a lowercase entry → keep; otherwise → unknown | Separates real words and names cheaply. The name check comes before the inflection check so names like *todd* (*tod* + *d*) are not mistaken for inflections. |
+| 4. Dictionary | Check `data/web2` (Webster's 2nd, 1934): lowercase entry → keep; capitalized-only entry or in `data/propernames` → drop as a name unless listed in `data/name_rescues.txt`; inflection of a lowercase entry → keep; otherwise → unknown | Separates real words and names cheaply. The name check comes before the inflection check so names like *todd* (*tod* + *d*) are not mistaken for inflections. The rescue list restores real words the 1934 dictionary only capitalizes (*biblical*, *acacia*, *dahlia*). |
 | 5. LLM review | Unknown words are kept unless listed in `data/llm_drops.tsv` | The dictionary is from 1934, so it misses modern words (*online*, *glitch*), irregular forms (*women*, *held*) and modern names (*london*). Those needed judgment. |
 
 `web2` and `propernames` are copied from macOS `/usr/share/dict` (the 1934 copyright has lapsed)
@@ -49,14 +49,42 @@ Instructions given to each batch (abridged): keep any standard English word, inc
 modern informal words, and any word found in a standard dictionary such as Merriam-Webster even if
 foreign in origin or technical; drop only clear cases of the codes above; when unsure, keep.
 
+## The name review (step 4)
+
+`data/name_rescues.txt` lists words the 1934 dictionary only capitalizes but that have a common
+lowercase use. It was produced once (November 2026) by having Claude Haiku review all 3,803
+capitalized-only words in 4 batches, keeping words like plants, foods, objects and adjectives named
+after people or places, and leaving out personal names, places, brands, nationalities, months and days.
+When unsure, the agents rescued the word. Five rescues were removed by hand: two offensive racial
+terms, *goddam*, *awol* and *hehe*.
+
+## Measuring against NYT
+
+The list was checked against NYT's full answer lists for three puzzles (P+GINOTV, O+AHPRTY, and
+C+ABIKLT up to *cattail*): 135 answers in total.
+
+| Version | NYT answers found | Extra words shown |
+|---|---|---|
+| Raw source list | 131 (97%) | 306 |
+| First cleanup | 123 (91%) | 106 |
+| With name review and manual keeps | 135 (100%) | 107 |
+
+Six of the 135 are found only because they were added to `manual_keep.txt` after being seen as misses,
+so the true hit rate on unseen puzzles is somewhat below 100%. Most remaining extras are archaic
+1934 dictionary words that have never been reviewed.
+
 ## Known limitations
 
 - **Archaic dictionary words remain.** Step 4 keeps every lowercase `web2` entry, including archaic
   and dialect forms (*doon*, *neet*, *woon*, *neeld*). They were never reviewed.
 - **Batches varied in strictness.** Some batches dropped foreign and obscure words more readily than
   others, so a few questionable words (*monde*, *comite*) survived in the lenient batches.
+- **The name review leans toward keeping.** Some plain names were rescued (*albert*, *charlie*,
+  *vienna*). They only appear when a puzzle's letters happen to spell them.
 - **No S words.** A puzzle containing S will find nothing for those words. This matches NYT, which
   never uses S.
 
-To fix an individual word, add it to `data/manual_keep.txt` (to keep it) or add a line to
-`data/llm_drops.tsv` (to drop it), then rebuild.
+To fix an individual word, then rebuild:
+- to keep or add it: add it to `data/manual_keep.txt`
+- to drop a rescued name: remove it from `data/name_rescues.txt`
+- to drop an unknown word: add a line to `data/llm_drops.tsv`
