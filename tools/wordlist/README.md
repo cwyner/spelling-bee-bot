@@ -30,6 +30,18 @@ The build is deterministic: the same inputs always produce the same `wordlist.js
 `web2` and `propernames` are copied from macOS `/usr/share/dict` (the 1934 copyright has lapsed)
 so the build works on any machine.
 
+## Output and the "less common" flag
+
+`wordlist.json` is a list of `{"word": ..., "common": true|false}`. A word is common when its
+`wordfreq` Zipf score, or the score of its base word (*optioning* → *option*), is at least
+`COMMON_THRESHOLD` in `build_wordlist.py` (currently 2.0). The backend passes the flag through on
+each solution, and the UI shows uncommon words in a grayed-out "Less common words" section.
+
+This is a display hint, not a filter: frequency alone can't separate NYT answers from extras, because
+NYT accepts some genuinely rare words (*pipit*, *hortatory*). On the three test puzzles, 2.0 moves
+31 of 54 extras into the less-common section, along with 19 of 135 real answers. To re-tune, change
+the constant and rebuild.
+
 ## The LLM review (step 5)
 
 `data/llm_drops.tsv` lists the words dropped, one per line as `word<TAB>code`. It was produced once

@@ -53,7 +53,8 @@ public class SolverService {
             }
             if (isRequiredLetterUsed) {
                 boolean pangram = seen.size() == 7;
-                validWords.add(new WordDto(word, pangram, calculatePoints(word, pangram)));
+                validWords.add(new WordDto(word, pangram, calculatePoints(word, pangram),
+                        wordlistService.isCommon(word)));
             }
         }
         SolutionsDto solutions = new SolutionsDto(validWords);

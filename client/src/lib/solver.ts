@@ -9,6 +9,8 @@ export interface WordDto {
   word: string
   pangram: boolean
   points: number
+  /** False for rare words that fit the puzzle but are less likely to be accepted by NYT. */
+  common: boolean
 }
 
 export interface SolutionsDto {

@@ -28,6 +28,9 @@ export function SolutionsPanel({ status, words, onRetry }: SolutionsPanelProps) 
     return sorted
   }, [words, query, sort])
 
+  const commonWords = visible.filter((w) => w.common)
+  const lessCommonWords = visible.filter((w) => !w.common)
+
   const pangramCount = useMemo(() => words.filter((w) => w.pangram).length, [words])
   const hasWords = status === 'solved' && words.length > 0
 
@@ -119,27 +122,43 @@ export function SolutionsPanel({ status, words, onRetry }: SolutionsPanelProps) 
             <p className="panel-message-sub">No words match "{query.trim()}".</p>
           </div>
         )}
-        {hasWords && visible.length > 0 && (
-          <ul className="word-list">
-            {visible.map((w, i) => (
-              <li
-                key={w.word}
-                className={`word${w.pangram ? ' is-pangram' : ''}`}
-                style={{ '--i': Math.min(i, 60) } as CSSProperties}
-              >
-                {titleCase(w.word)}
-                {w.pangram && (
-                  <span className="pangram-star" aria-label="pangram">
-                    ★
-                  </span>
-                )}
-                <span className="word-points">{w.points}</span>
-              </li>
-            ))}
-          </ul>
+        {hasWords && commonWords.length > 0 && <WordList words={commonWords} />}
+        {hasWords && lessCommonWords.length > 0 && (
+          <section className="less-common" aria-labelledby="less-common-title">
+            <div className="less-common-head">
+              <h3 id="less-common-title" className="less-common-title">
+                Less common words
+                <span className="less-common-count">{lessCommonWords.length}</span>
+              </h3>
+              <p className="less-common-sub">These fit the puzzle but are rarely used, so NYT may not accept them.</p>
+            </div>
+            <WordList words={lessCommonWords} startIndex={commonWords.length} />
+          </section>
         )}
       </div>
     </section>
+  )
+}
+
+function WordList({ words, startIndex = 0 }: { words: WordDto[]; startIndex?: number }) {
+  return (
+    <ul className="word-list">
+      {words.map((w, i) => (
+        <li
+          key={w.word}
+          className={`word${w.pangram ? ' is-pangram' : ''}`}
+          style={{ '--i': Math.min(startIndex + i, 60) } as CSSProperties}
+        >
+          {titleCase(w.word)}
+          {w.pangram && (
+            <span className="pangram-star" aria-label="pangram">
+              ★
+            </span>
+          )}
+          <span className="word-points">{w.points}</span>
+        </li>
+      ))}
+    </ul>
   )
 }
 

@@ -12,6 +12,10 @@ Pipeline (see README.md for the reasoning behind each step):
        - not in the dictionary at all                         -> "unknown"
   5. Unknown words: keep unless listed in data/llm_drops.tsv (LLM review decisions).
 
+Each kept word is written as {"word": ..., "common": ...}. A word is "common" when its frequency, or
+the frequency of its base word (optioning -> option), is at least COMMON_THRESHOLD. The UI shows
+uncommon words in a separate, grayed-out section.
+
 Usage (from the repo root):
   pip install -r tools/wordlist/requirements.txt
   python tools/wordlist/build_wordlist.py
@@ -28,6 +32,10 @@ HERE = Path(__file__).resolve().parent
 DATA = HERE / "data"
 SOURCE = DATA / "source_wordlist.json"
 OUTPUT = HERE.parents[1] / "backend" / "src" / "main" / "resources" / "wordlist.json"
+
+# Zipf score below which a word is shown as "less common". Measured on three NYT puzzles (see README):
+# 2.0 moves about 57% of extra words into the less-common section, along with about 14% of real answers.
+COMMON_THRESHOLD = 2.0
 
 INFLECTIONS = [
     ("ied", "y"), ("ier", "y"), ("iest", "y"), ("ily", "y"), ("ies", "y"),
@@ -56,6 +64,11 @@ def base_forms(word: str) -> list[str]:
             if len(base) > 3 and base[-1] == base[-2]:
                 out.append(base[:-1])
     return out
+
+
+def commonness(word: str) -> float:
+    """Frequency of the word, or of its most frequent base form, so rare inflections of common words count as common."""
+    return max([zipf_frequency(word, "en")] + [zipf_frequency(b, "en") for b in base_forms(word)])
 
 
 def read_drops(path: Path) -> dict[str, str]:
@@ -112,13 +125,16 @@ def main() -> None:
     added = sorted(w for w in manual_keep if w not in source_set and passes_structure(w))
     kept = sorted(set(kept) | set(added))
 
-    OUTPUT.write_text(json.dumps(kept, indent=4) + "\n")
+    entries = [{"word": w, "common": commonness(w) >= COMMON_THRESHOLD} for w in kept]
+    OUTPUT.write_text("[\n" + ",\n".join(json.dumps(e) for e in entries) + "\n]\n")
 
     print(f"source words: {len(words):,}")
     for reason, count in sorted(reasons.items(), key=lambda kv: -kv[1]):
         print(f"  dropped, {reason}: {count:,}")
     print(f"  added from manual_keep.txt (not in source): {len(added):,}")
-    print(f"kept: {len(kept):,} -> {OUTPUT.relative_to(HERE.parents[1])}")
+    uncommon = sum(1 for e in entries if not e["common"])
+    print(f"kept: {len(kept):,} ({uncommon:,} less common, below {COMMON_THRESHOLD}) "
+          f"-> {OUTPUT.relative_to(HERE.parents[1])}")
 
 
 if __name__ == "__main__":

@@ -632,6 +632,64 @@ p {
   font-size: 12px;
 }
 
+/* Less common words: rare words shown below the main list, grayed out */
+
+.less-common {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1.5px dashed var(--line);
+}
+
+.less-common:first-child {
+  margin-top: 8px;
+}
+
+.less-common-head {
+  margin-bottom: 6px;
+}
+
+.less-common-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.less-common-count {
+  color: var(--ink-faint);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.less-common-sub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+
+.less-common .word {
+  color: var(--ink-faint);
+}
+
+.less-common .word-points {
+  background: #f6f6f6;
+  color: var(--ink-faint);
+}
+
+.less-common .word.is-pangram {
+  background: var(--bee-yellow-wash);
+  color: var(--ink-soft);
+}
+
+.less-common .word.is-pangram .word-points {
+  background: var(--ink-faint);
+  color: #fff;
+}
+
 /* Empty / message / skeleton */
 
 .empty,

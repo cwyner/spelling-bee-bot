@@ -6,27 +6,36 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Loads wordlist.json (built by tools/wordlist/build_wordlist.py) once at startup.
+ * Each entry is a word plus whether it is common enough to be a likely NYT answer.
+ */
 @ApplicationScoped
 public class WordlistService {
     private static final String WORDLIST_RESOURCE = "wordlist.json";
 
-    private Set<String> words = Set.of();
+    /** One entry of wordlist.json. */
+    record WordlistEntry(String word, boolean common) {
+    }
+
+    private Map<String, Boolean> commonByWord = Map.of();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostConstruct
     void init() {
-        words = loadWords();
+        commonByWord = loadWords();
     }
 
-    private Set<String> loadWords() {
+    private Map<String, Boolean> loadWords() {
         InputStream inputStream = Thread.currentThread()
                 .getContextClassLoader()
                 .getResourceAsStream(WORDLIST_RESOURCE);
@@ -35,27 +44,32 @@ public class WordlistService {
         }
 
         try (inputStream) {
-            List<String> rawWords = objectMapper.readValue(inputStream, new TypeReference<List<String>>() {
+            List<WordlistEntry> entries = objectMapper.readValue(inputStream, new TypeReference<List<WordlistEntry>>() {
             });
-            Set<String> normalized = new LinkedHashSet<>(rawWords.size());
-            for (String word : rawWords) {
-                if (word == null) {
+            Map<String, Boolean> normalized = new HashMap<>(entries.size());
+            for (WordlistEntry entry : entries) {
+                if (entry == null || entry.word() == null) {
                     continue;
                 }
-                String cleaned = word.trim().toLowerCase(Locale.ROOT);
+                String cleaned = entry.word().trim().toLowerCase(Locale.ROOT);
                 if (cleaned.isEmpty()) {
                     continue;
                 }
-                normalized.add(cleaned);
+                normalized.put(cleaned, entry.common());
             }
-            return Set.copyOf(normalized);
+            return Map.copyOf(normalized);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to read " + WORDLIST_RESOURCE, e);
         }
     }
 
     public Set<String> getWords() {
-        return words;
+        return commonByWord.keySet();
+    }
+
+    /** Whether a word from {@link #getWords()} is common; unknown words count as not common. */
+    public boolean isCommon(String word) {
+        return commonByWord.getOrDefault(word, false);
     }
 
 }
