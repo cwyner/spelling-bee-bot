@@ -24,7 +24,7 @@ The build is deterministic: the same inputs always produce the same `wordlist.js
 | 1. Structure | 4+ letters, a-z only, at most 7 distinct letters, no `s` | Can never be a Spelling Bee answer. NYT puzzles never use the letter S. |
 | 2. Manual keep | Words in `data/manual_keep.txt` are always kept, and added even if the source list lacks them | Escape hatch for real words the rules get wrong or the source is missing (*clickbait*, *acai*). |
 | 3. Frequency | Drop words with a `wordfreq` Zipf score of 0 | Never seen in real English text: almost entirely obscure junk. |
-| 4. Dictionary | Check `data/web2` (Webster's 2nd, 1934): lowercase entry → keep; capitalized-only entry or in `data/propernames` → drop as a name unless listed in `data/name_rescues.txt`; inflection of a lowercase entry → keep; otherwise → unknown | Separates real words and names cheaply. The name check comes before the inflection check so names like *todd* (*tod* + *d*) are not mistaken for inflections. The rescue list restores real words the 1934 dictionary only capitalizes (*biblical*, *acacia*, *dahlia*). |
+| 4. Dictionary | Check `data/web2` (Webster's 2nd, 1934): capitalized-only entry or in `data/propernames` → drop as a name unless listed in `data/name_rescues.txt`; lowercase entry or an inflection of one → keep unless listed in `data/archaic_drops.tsv`; otherwise → unknown | Separates real words and names cheaply. The name check comes before the inflection check so names like *todd* (*tod* + *d*) are not mistaken for inflections. The rescue list restores real words the 1934 dictionary only capitalizes (*biblical*, *acacia*, *dahlia*). The archaic list removes entries the 1934 dictionary has but modern English doesn't use (*doon*, *neeld*, *thoro*). |
 | 5. LLM review | Unknown words are kept unless listed in `data/llm_drops.tsv` | The dictionary is from 1934, so it misses modern words (*online*, *glitch*), irregular forms (*women*, *held*) and modern names (*london*). Those needed judgment. |
 
 `web2` and `propernames` are copied from macOS `/usr/share/dict` (the 1934 copyright has lapsed)
@@ -58,6 +58,22 @@ after people or places, and leaving out personal names, places, brands, national
 When unsure, the agents rescued the word. Five rescues were removed by hand: two offensive racial
 terms, *goddam*, *awol* and *hehe*.
 
+## The archaic review (step 4)
+
+`data/archaic_drops.tsv` lists 1934 dictionary words dropped as not part of modern English, as
+`word<TAB>code`. It was produced once (November 2026) by having Claude Haiku review the 26,621
+dictionary words with a `wordfreq` Zipf score below 4.0 (more common words were assumed fine), in
+27 batches plus one calibration batch. It uses the codes above plus **T** for highly specialized
+technical terms.
+
+The instructions were calibrated first on a batch containing the test puzzles' words (without telling
+the agent which were NYT answers). The first version dropped 5 of 111 real answers by treating
+loanwords (*hora*) and shortened words (*hypo*) as foreign or abbreviations, so the final version
+explicitly keeps loanwords, shortened forms that are words in their own right, and verb forms of any
+dictionary verb. Instructions (abridged): drop archaic or dialect forms, highly specialized technical
+terms, names, abbreviations, unused foreign words, junk and slurs; keep any word in a current standard
+dictionary that a well-read person might use; when unsure, keep.
+
 ## Measuring against NYT
 
 The list was checked against NYT's full answer lists for three puzzles (P+GINOTV, O+AHPRTY, and
@@ -68,15 +84,21 @@ C+ABIKLT up to *cattail*): 135 answers in total.
 | Raw source list | 131 (97%) | 306 |
 | First cleanup | 123 (91%) | 106 |
 | With name review and manual keeps | 135 (100%) | 107 |
+| With archaic review | 133 (98.5%) | 54 |
+| Plus *toro*, *torta* in manual keeps | 135 (100%) | 54 |
 
-Six of the 135 are found only because they were added to `manual_keep.txt` after being seen as misses,
-so the true hit rate on unseen puzzles is somewhat below 100%. Most remaining extras are archaic
-1934 dictionary words that have never been reviewed.
+Eight of the 135 are found only because they were added to `manual_keep.txt` after being seen as misses,
+so the true hit rate on unseen puzzles is somewhat lower. The archaic review lost *toro* and *torta*
+(judged foreign), which were then added by hand. The remaining extras are mostly real but uncommon words NYT skipped (*porphyry*,
+*horary*) and words the lenient review batches kept (*yoyo*, *troppo*).
 
 ## Known limitations
 
-- **Archaic dictionary words remain.** Step 4 keeps every lowercase `web2` entry, including archaic
-  and dialect forms (*doon*, *neet*, *woon*, *neeld*). They were never reviewed.
+- **Common archaic words were not reviewed.** The archaic review only covered words with a Zipf score
+  below 4.0, so a few frequent-looking 1934 entries remain.
+- **Some loanwords were dropped.** Despite explicit instructions, the archaic review treated a few
+  loanwords as foreign (*toro* and *torta*, since added back by hand). Add any others you notice to
+  `data/manual_keep.txt`.
 - **Batches varied in strictness.** Some batches dropped foreign and obscure words more readily than
   others, so a few questionable words (*monde*, *comite*) survived in the lenient batches.
 - **The name review leans toward keeping.** Some plain names were rescued (*albert*, *charlie*,
@@ -87,4 +109,5 @@ so the true hit rate on unseen puzzles is somewhat below 100%. Most remaining ex
 To fix an individual word, then rebuild:
 - to keep or add it: add it to `data/manual_keep.txt`
 - to drop a rescued name: remove it from `data/name_rescues.txt`
+- to drop a 1934 dictionary word: add a line to `data/archaic_drops.tsv`
 - to drop an unknown word: add a line to `data/llm_drops.tsv`

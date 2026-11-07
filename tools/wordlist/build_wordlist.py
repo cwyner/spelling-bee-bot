@@ -5,10 +5,10 @@ Pipeline (see README.md for the reasoning behind each step):
   2. Words in data/manual_keep.txt are always kept, and added even if the source lacks them.
   3. Frequency: drop words never seen in real English text (wordfreq Zipf score of 0).
   4. Dictionary classification (Webster's 1934, data/web2), checked in this order:
-       - lowercase dictionary word                            -> keep
+       - lowercase dictionary word                            -> keep, unless in data/archaic_drops.tsv
        - only ever capitalized there, or in data/propernames  -> drop as a proper noun,
                                                                  unless listed in data/name_rescues.txt
-       - inflection of a lowercase dictionary word            -> keep
+       - inflection of a lowercase dictionary word            -> keep, unless in data/archaic_drops.tsv
        - not in the dictionary at all                         -> "unknown"
   5. Unknown words: keep unless listed in data/llm_drops.tsv (LLM review decisions).
 
@@ -58,6 +58,16 @@ def base_forms(word: str) -> list[str]:
     return out
 
 
+def read_drops(path: Path) -> dict[str, str]:
+    """Read a word<TAB>code file of LLM review decisions."""
+    drops = {}
+    for line in path.read_text().splitlines():
+        if line.strip():
+            word, code = line.split("\t")
+            drops[word] = code
+    return drops
+
+
 def main() -> None:
     raw = json.loads(SOURCE.read_text())
     words = sorted({w.strip().lower() for w in raw if w and w.strip()})
@@ -70,11 +80,8 @@ def main() -> None:
     manual_keep = set((DATA / "manual_keep.txt").read_text().split())
     name_rescues = set((DATA / "name_rescues.txt").read_text().split())
 
-    llm_drops = {}
-    for line in (DATA / "llm_drops.tsv").read_text().splitlines():
-        if line.strip():
-            word, code = line.split("\t")
-            llm_drops[word] = code
+    llm_drops = read_drops(DATA / "llm_drops.tsv")
+    archaic_drops = read_drops(DATA / "archaic_drops.tsv")
 
     reasons = Counter()
     kept = []
@@ -85,15 +92,16 @@ def main() -> None:
             kept.append(word)
         elif zipf_frequency(word, "en") == 0:
             reasons["never seen"] += 1
-        elif word in lowercase_dict:
-            kept.append(word)
         elif word in capital_only or word in proper_names:
             if word in name_rescues:
                 kept.append(word)
             else:
                 reasons["proper noun (dictionary)"] += 1
-        elif any(b in lowercase_dict for b in base_forms(word)):
-            kept.append(word)
+        elif word in lowercase_dict or any(b in lowercase_dict for b in base_forms(word)):
+            if word in archaic_drops:
+                reasons[f"archaic review ({archaic_drops[word]})"] += 1
+            else:
+                kept.append(word)
         elif word in llm_drops:
             reasons[f"llm review ({llm_drops[word]})"] += 1
         else:
