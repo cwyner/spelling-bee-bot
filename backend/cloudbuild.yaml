@@ -1,0 +1,64 @@
+# CI/CD for the backend: test, build image, push to Artifact Registry, deploy to Cloud Run.
+#
+# Intended to run from a Cloud Build GitHub trigger with:
+#   - Config file:     backend/cloudbuild.yaml
+#   - Included files:  backend/**
+#   - Service account: cloud-build-deployer@<project>.iam.gserviceaccount.com
+#
+# Manual run from the repo root (COMMIT_SHA is only set automatically by triggers):
+#   gcloud builds submit --config=backend/cloudbuild.yaml \
+#     --substitutions=COMMIT_SHA=$(git rev-parse HEAD) .
+
+substitutions:
+  _REGION: us-east1
+  _REPOSITORY: backend
+  _SERVICE: spelling-bee-backend
+  _RUNTIME_SA: spelling-bee-run
+  _IMAGE: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/solver
+
+steps:
+  # Uses mvn from an image pinned to the wrapper's Maven version instead of ./mvnw:
+  # the wrapper needs unzip, which slim JDK images lack. Keep this tag in sync with
+  # .mvn/wrapper/maven-wrapper.properties.
+  - id: test-and-package
+    name: maven:3.9.12-eclipse-temurin-25
+    dir: backend
+    entrypoint: mvn
+    args: ["--batch-mode", "--no-transfer-progress", "verify", "-DskipITs=false"]
+
+  - id: build-image
+    name: gcr.io/cloud-builders/docker
+    dir: backend
+    args:
+      - build
+      - --file=src/main/docker/Dockerfile.jvm
+      - --tag=${_IMAGE}:${COMMIT_SHA}
+      - .
+
+  - id: push-image
+    name: gcr.io/cloud-builders/docker
+    args: ["push", "${_IMAGE}:${COMMIT_SHA}"]
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_IMAGE}:${COMMIT_SHA}
+      - --region=${_REGION}
+      - --service-account=${_RUNTIME_SA}@${PROJECT_ID}.iam.gserviceaccount.com
+      - --no-invoker-iam-check
+      - --cpu-boost
+      - --max-instances=3
+      - --quiet
+
+images:
+  - ${_IMAGE}:${COMMIT_SHA}
+
+options:
+  # Lets _IMAGE reference other substitutions, for manual submits as well as triggers.
+  dynamicSubstitutions: true
+  # Required when the build runs as a user-specified service account.
+  logging: CLOUD_LOGGING_ONLY
