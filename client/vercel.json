@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/solver",
+      "destination": "https://spelling-bee-backend-elcuc2k4fa-ue.a.run.app/solver"
+    }
+  ]
+}

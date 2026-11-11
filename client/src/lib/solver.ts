@@ -1,5 +1,3 @@
-import { API_URL } from '../config'
-
 export interface PuzzleDto {
   requiredLetter: string
   outerLetters: string[]
@@ -18,7 +16,8 @@ export interface SolutionsDto {
 }
 
 export async function solvePuzzle(puzzle: PuzzleDto): Promise<SolutionsDto> {
-  const response = await fetch(`${API_URL}/solver`, {
+  // Same-origin path: proxied by Vite in dev and rewritten to Cloud Run by Vercel in prod.
+  const response = await fetch('/solver', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(puzzle),
