@@ -1,5 +1,9 @@
 # Spelling Bee Bot
 
+## Try it out yourself
+
+The Spelling Bee Bot is now live [here](https://spelling-bee-bot.vercel.app/)!
+
 ## Why I made this
 
 Every morning I play the hit game **Spelling Bee** from the New York Times. What a great way to start my day! It's a unique sort of challenge and I love it when I manage to pull out a word that I didn't even know that I knew—isn't it amazing what the human mind can accomplish? And once I can't possibly think of any more words, I put the phone down and give myself a pat on the back for a job well done. Then, in the spirit of friendly competition, I click out of the game and compare my score with my sister's. Day ruined.
@@ -8,7 +12,7 @@ So I made this! A little passion project that could guarantee I never lose the *
 
 ## How it works
 
-The Spelling Bee Bot is comprised of 2 microservices: a Quarkus backend and a React + Vite web UI (in `client/`). The backend exposes a single endpoint at https://whatever-the-URL-is/solver, which takes in a POST request whenever a user clicks "Solve" in the web UI. The expected JSON body of said request is of the following form:
+The Spelling Bee Bot is comprised of 2 microservices: a Quarkus backend and a React + Vite web UI (in `client/`). The backend exposes a single endpoint which takes in a POST request from the client whenever a user clicks "Solve". Pretty simple!
 
 If you want to run this application locally, first clone the repo. Then, open two separate terminals. From the root folder of this project, run the following commands in the first terminal:
 
@@ -25,17 +29,36 @@ npm install
 npm run dev
 ```
 
-Once the web UI is up and running, navigate to http://localhost:5173/ in your browser. Click a cell in the honeycomb and type a letter (the yellow center letter is required). Once all 7 cells are filled, click "Solve". Great! You've successfully solved the **Spelling Bee**!
-
 ## Current Release:
+
+### Solver V4.0 (Pushed on November 11th, 2026) - Production ready!
+
+### Features
+
+- Remade entire UI with React
+- "Wired up" client and backned to make solve requests
+- Pangram detection
+- Points calculation
+- Sorting by A-Z or scoring in UI
+- Significant truncation of words list using Python's wordfreq library
+- Deployed backend to Google Cloud
+- Deployed frontend to Vercel
+- Ready to play at https://spelling-bee-bot.vercel.app/
+
+
+### Still to come
+
+- Automatically import daily puzzle from NYT into the bot
+
+## Archived Releases: 
+
+### Solver V3.0 (didn't really exist, moved right along to 4.0)
 
 ### Solver V2.0 (pushed on April 26th, 2026)
 
 ### Features
 
 - Added Web UI :)
-
-## Archived Releases: 
 
 ### Solver V1.1 (pushed on March 12th, 2026)
 
